@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#281a34">
+<title>Два котики · Одна історія</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#281a34;color:#fff5fa;font:16px system-ui, sans-serif;display:grid;place-items:center;text-align:center}
+main{padding:32px;max-width:440px}h1{font-size:26px}p{opacity:.85;line-height:1.5}.bar{height:8px;background:#725c78;border-radius:10px;overflow:hidden;margin:25px auto;max-width:280px}
+#progress{height:100%;width:2%;background:#f2b9d2;transition:width .2s}
+</style>
+</head>
+<body>
+<main>
+<h1>🐈‍⬛ Два котики. Одна історія. 🤍</h1>
+<p id="status">Завантажуємо наш маленький світ… ♡</p>
+<div class="bar"><div id="progress"></div></div>
+</main>
+<script>
+(async()=>{
+  const count=13;
+  const progress=document.getElementById('progress');
+  const status=document.getElementById('status');
+  let done=0;
+  const parts=await Promise.all(Array.from({length:count},(_,i)=>{
+    const filename='payload/chunk-'+String(i+1).padStart(4,'0')+'.txt';
+    return fetch(filename,{cache:'default'}).then(async response=>{
+      if(!response.ok)throw new Error('Не вдалося завантажити '+filename+': HTTP '+response.status);
+      const part=await response.text();
+      progress.style.width=(++done/count*100).toFixed(0)+'%';
+      return part;
+    });
+  }));
+  const game=parts.join('');
+  if(!game.startsWith('<!DOCTYPE html>')||!game.includes('GAME_ASSETS'))throw new Error('Файл гри неповний');
+  document.open();
+  document.write(game);
+  document.close();
+})().catch(error=>{
+  document.getElementById('status').textContent='Помилка завантаження. Спробуйте оновити сторінку: '+error.message;
+  document.getElementById('progress').style.background='#ff788a';
+  console.error(error);
+});
+</script>
+</body>
+</html>
